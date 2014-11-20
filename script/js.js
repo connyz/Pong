@@ -31,26 +31,26 @@ $(function (){
 
 		// Method to paint the ball
 		Paint: function(){
-		ctx.beginPath();
-		ctx.fillStyle = this.Color;
-		ctx.arc(this.X, this.Y, this.Radius, 0, Math.PI * 2, false);
-		ctx.fill();
-		this.Update();
+			ctx.beginPath();
+			ctx.fillStyle = this.Color;
+			ctx.arc(this.X, this.Y, this.Radius, 0, Math.PI * 2, false);
+			ctx.fill();
+			this.Update();
 		},
 
 		// Method to update the balls position
 		Update: function(){
-		this.X += this.VelX;
-		this.Y += this.VelY;
+			this.X += this.VelX;
+			this.Y += this.VelY;
 		},
 
 		// Reset balls position and set a random velocity (left or right) when scoring or game ends
 		Reset: function(){
-		this.X = Width/2;
-		this.Y = Height/2;
-		this.VelX = (!!Math.round(Math.random() * 1) ? 1.5 : -1.5);
-		this.VelY = (!!Math.round(Math.random() * 1) ? 1.5 : -1.5);
-			}
+			this.X = Width/2;
+			this.Y = Height/2;
+			this.VelX = (!!Math.round(Math.random() * 1) ? 1.5 : -1.5);
+			this.VelY = (!!Math.round(Math.random() * 1) ? 1.5 : -1.5);
+		}
 	};
 
 	// Create paddles for player and computer. Set left or right positions. Add scores above each paddle.
