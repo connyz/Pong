@@ -1,200 +1,111 @@
-$(function (){
+$(function() {
 
-	// Setup variables for canvas
-	var Width = 800;
-	var Height = 450;
-	var canvas = document.getElementById("game");
-	canvas.width = Width;
-	canvas.height = Height;
-	canvas.setAttribute('tabindex', 1);
-	var ctx = canvas.getContext("2d");
-	var FPS = 1000 / 60;
+	// Game class for canvas
+	function Game() {
+		var canvas = document.getElementById("game");
+		this.width = canvas.width;
+		this.height = canvas.height;
+		this.context = canvas.getContext("2d");
+		this.context.fillStyle = "white";
+		// Create keylistener
+		this.keys = new KeyListener();
 
-	// Fill the canvas background
-	var BG = {
-		Color: '#333',
-		Paint: function(){
-			ctx.fillStyle = this.Color;
-			ctx.fillRect(0, 0, Width, Height);
-		}
-	};
-
-	// Create a ball with coordinates, color, radius and velocity and methods
-	var Ball = {
-		// Variables
-		Radius: 5,
-		Color: '#999',
-		X: 0,
-		Y: 0,
-		VelX: 0,
-		VelY: 0,
-
-		// Method to paint the ball
-		Paint: function(){
-			ctx.beginPath();
-			ctx.fillStyle = this.Color;
-			ctx.arc(this.X, this.Y, this.Radius, 0, Math.PI * 2, false);
-			ctx.fill();
-			this.Update();
-		},
-
-		// Method to update the balls position
-		Update: function(){
-			this.X += this.VelX;
-			this.Y += this.VelY;
-		},
-
-		// Reset balls position and set a random velocity (left or right) when scoring or game ends
-		Reset: function(){
-			this.X = Width/2;
-			this.Y = Height/2;
-			this.VelX = (!!Math.round(Math.random() * 1) ? 1.5 : -1.5);
-			this.VelY = (!!Math.round(Math.random() * 1) ? 1.5 : -1.5);
-		}
-	};
-
-	// Create paddles for player and computer. Set left or right positions. Add scores above each paddle.
-	function Paddle(position){
-		this.Color = '#999';
-		this.Width = 5;
-		this.Height = 100;
-		this.X = 0;
-		this.Y = Height/2 - this.Height/2;
-		this.Score = 0;
-
-		if(position == 'left'){
-			this.X = 0;
-		}else{
-			this.X = Width - this.Width;
-		};
-
-		this.Paint = function(){
-			ctx.fillStyle = this.Color;
-			ctx.fillRect(this.X, this.Y, this.Width, this.Height);
-			ctx.fillStyle = this.Color;
-			ctx.font = "normal 10pt Calibri";
-			if(position == 'left'){
-				ctx.textAlign = "left";
-				ctx.fillText("score: " + Player.Score, 10, 10);
-			}else{
-				ctx.textAlign = "right";
-				ctx.fillText("score: " + Computer.Score, Width - 10, 10);
-			}
-		};
-
-		this.IsCollision = function () {
-			if (Ball.X - Ball.Radius > this.Width + this.X || this.X > Ball.Radius * 2 + Ball.X - Ball.Radius){
-				return false;
-			}
-			if (Ball.Y - Ball.Radius > this.Height + this.Y || this.Y > Ball.Radius * 2 + Ball.Y - Ball.Radius){
-				return false;
-			}
-			return true;
-		};
-
-	};
-
-	window.requestAnimFrame = (function(){
-		return window.requestAnimationFrame ||
-		window.webkitRequestAnimationFrame ||
-		window.mozRequestAnimationFrame ||
-		window.oRequestAnimationFrame ||
-		window.msRequestAnimationFrame ||
-		function( callback ){ return window.setTimeout(callback, FPS); }; }
-	)();
-
-	window.cancelRequestAnimFrame = (function() {
-		return window.cancelAnimationFrame ||
-		window.webkitCancelRequestAnimationFrame ||
-		window.mozCancelRequestAnimationFrame ||
-		window.oCancelRequestAnimationFrame ||
-		window.msCancelRequestAnimationFrame ||
-		clearTimeout; }
-	)();
-
-	// Create player and computer opponent
-	var Computer = new Paddle();
-	var Player = new Paddle('left');
-
-	// Function for starting drawing up stuff on canvas
-	function Paint(){
-		ctx.beginPath();
-		BG.Paint();
-		Computer.Paint();
-		Player.Paint();
-		Ball.Paint();
+		// When creating game, add player1 & 2 paddles at middle position
+    this.p1 = new Paddle(5, 0);
+    this.p1.y = this.height/2 - this.p1.height/2;
+    this.p2 = new Paddle(this.width - 5 - 2, 0);
+    this.p2.y = this.height/2 - this.p2.height/2;
 	}
 
-	// A function to check where player mouse is and move paddle accordingly
-	function MouseMove(e){
-		Player.Y = e.pageY - Player.Height/2;
+	// Add method to game class
+	Game.prototype.draw = function(){
+		// Fill a line in middle and clear the other space
+    this.context.clearRect(0, 0, this.width, this.height);
+    this.context.fillRect(this.width/2, 0, 2, this.height);
+
+    // Draw up paddles
+    this.p1.draw(this.context);
+    this.p2.draw(this.context);
+	};
+
+	// Add update method to game class
+	Game.prototype.update = function(){
+    if (this.paused){
+			return;
+    }
+
+    // To which Y direction the paddle is moving
+    if (this.keys.isPressed(83)) { // DOWN
+        this.p1.y = Math.min(this.height - this.p1.height, this.p1.y + 4);
+    } else if (this.keys.isPressed(87)) { // UP
+        this.p1.y = Math.max(0, this.p1.y - 4);
+    }
+
+    if (this.keys.isPressed(40)) { // DOWN
+        this.p2.y = Math.min(this.height - this.p2.height, this.p2.y + 4);
+    } else if (this.keys.isPressed(38)) { // UP
+        this.p2.y = Math.max(0, this.p2.y - 4);
+    }
+	};
+
+	// Paddle class to store position, width, height and score
+	function Paddle(x,y) {
+    this.x = x;
+    this.y = y;
+    this.width = 2;
+    this.height = 28;
+    this.score = 0;
 	}
 
-	// Add listener for mouse movenments
-	canvas.addEventListener("mousemove", MouseMove, true);
+	// Add draw method for paddle class for player
+	Paddle.prototype.draw = function(p){
+    p.fillRect(this.x, this.y, this.width, this.height);
+	};
 
-	// Game loop, create animation loop and then call Paint() function, check for collisions
-	function Loop(){
-		init = requestAnimFrame(Loop);
-		Paint();
+	// Create a keylistener class
+	function KeyListener() {
+    this.pressedKeys = [];
 
-		// Check if the ball is hitting the paddles and if so reverse the velocities and add a little more speed to it. Make sure the ball isn't going to fast to avoid bugs that would generate if the ball can move from one side of the paddle to the other in one frame. If the ball is going too fast set the velocity to the maximum allowed velocity.
-		if(Player.IsCollision() || Computer.IsCollision()){
-			Ball.VelX = Ball.VelX * -1;
-			Ball.VelX += (Ball.VelX > 0 ? 0.5 : -0.5 );
+    this.keydown = function(e) {
+        this.pressedKeys[e.keyCode] = true;
+    };
 
-			if(Math.abs(Ball.VelX) > Ball.Radius * 1.5){
-				Ball.VelX = (Ball.VelX > 0 ? Ball.Radius * 1.5 : Ball.Radius * -1.5);
+    this.keyup = function(e) {
+        this.pressedKeys[e.keyCode] = false;
+    };
+
+    document.addEventListener("keydown", this.keydown.bind(this));
+    document.addEventListener("keyup", this.keyup.bind(this));
+	}
+
+	// Method to check if key is pressed
+	KeyListener.prototype.isPressed = function(key){
+		return this.pressedKeys[key] ? true : false;
+	};
+
+	// Method to set listener to key
+	KeyListener.prototype.addKeyPressListener = function(keyCode, callback){
+		document.addEventListener("keypress", function(e) {
+			if (e.keyCode == keyCode){
+				callback(e);
 			}
-		}
-
-		// If the ball is hitting the top or bottom then reverse the y velocity
-		if(Ball.Y - Ball.Radius < 0 || Ball.Y + Ball.Radius > Height){
-			Ball.VelY = Ball.VelY * -1;
-		}
-
-		// If the ball is hitting one of the edges add the score to the opposing paddle
-		if(Ball.X - Ball.Radius <= 0){
-			Computer.Score++;
-			Ball.Reset();
-		}else if(Ball.X + Ball.Radius > Width){
-			Player.Score++;
-			Ball.Reset();
-		}
-
-		// If someone has a score of 10 call game over function
-		if(Computer.Score === 10){
-			GameOver(false);
-		}else if(Player.Score === 10){
-			GameOver(true);
-		}
-
-		// Move the computers paddle in the direction of the ball
-		Computer.Y = (Computer.Y + Computer.Height/2 < Ball.Y ? Computer.Y + Computer.Vel : Computer.Y - Computer.Vel);
+		});
 	};
 
-	// If game is over stop animation and display winnar
-	function GameOver(win){
-		cancelRequestAnimFrame(init);
-		BG.Paint();
-		ctx.fillStyle = "#999";
-		ctx.font = "bold 40px Calibri";
-		ctx.textAlign = "center";
-		ctx.fillText((win ? "A WINNER IS YOU" : "GAME OVER"), Width/2, Height/2);
-		ctx.font = "normal 16px Calibri";
-		ctx.fillText("refresh to reply", Width/2, Height/2 + 20);
-	};
 
-	// Function for starting game, set ball and scores
-	function NewGame(){
-		Ball.Reset();
-		Player.Score = 0;
-		Computer.Score = 0;
-		Computer.Vel = 1.25;
-		Loop();
-	};
 
-	// Start the game and have lulz
-	NewGame();
+	// Initialize our game instance
+	var game = new Game();
+
+	function MainLoop() {
+		game.update();
+		game.draw();
+		// Call the main loop again at a frame rate of 30fps
+		setTimeout(MainLoop, 33.3333);
+	}
+
+	// Start the game execution
+	MainLoop();
+
 
 });
