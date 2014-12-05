@@ -1,8 +1,29 @@
-canvas {
-	width: 512px;
-	height: 256px;
+.gui {
+	width: 700px;
+	margin: 30px auto 0;
 }
 
-#game {
-	background-color: #353535;
+.playfield {
+	width: 700px;
+	height: 400px;
+	margin-top: 30px;
+	background-color: black;
+}
+
+.title {
+	width: 100%;
+	margin: 25px auto 0;
+	text-align: center;
+}
+
+h2 {
+	font-size: 30px;
+}
+
+.pScore {
+	float: left;
+}
+
+.aiScore {
+	float: right;
 }
