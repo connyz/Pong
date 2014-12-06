@@ -6,23 +6,33 @@ $(function(){
 		this.fieldH = $(".field").css("height");
 		this.fieldW = $(".field").css("width");
 
-		// Ballsize and position
+		// Ballsize and startposition
 		this.ballW = "20px";
 		this.ballH = "20px";
 		this.ballY = parseInt(this.fieldH, 10) / 2;
 		this.ballX = parseInt(this.fieldW, 10) / 2;
 
+		// Paddlesizes and startpositions
+		this.paddleH = "100px";
+		this.paddleW = "15px";
+		this.paddleY = parseInt(this.fieldH, 10) / 2 - 50;
+		this.paddle1X = 20;
+		this.paddle2X = parseInt(this.fieldW, 10) - 35;
+
 		// Ball speed and movement variables
-		this.ballXVelocity = 2;
-		this.ballYVelocity = 4;
-		this.ballMovingRight = 0; //Math.round(Math.random());
-		this.ballMovingUp = 1; //Math.round(Math.random());
+		this.ballXVelocity = 3;
+		this.ballYVelocity = 2;
+		this.ballMovingRight = Math.round(Math.random());
+		this.ballMovingUp = Math.round(Math.random());
 
 		// Spawn the ball
 		this.spawnBall();
 
 		// Draw up paddles
 		this.createPaddles();
+
+		// Setup movement for left paddle
+		this.paddleMoveMent();
 
 		// Start the game
 		this.Start();
@@ -38,17 +48,52 @@ $(function(){
 
 			// Check for collision with walls
 			self.collisionDetection();
-		},25);
+		},15);
 	};
 
 	Game.prototype.spawnBall = function (){
 		// Create balldiv and set, size, position and color. Append to field div
 		var ball = $("<div class='ball'>");
-		ball.css({width:this.ballW, height:this.ballH, left:this.ballX, top:this.ballY, position:"relative", "background-color":"white"});
+		ball.css({width:this.ballW, height:this.ballH, left:this.ballX, top:this.ballY, position:"relative", "background-color":"grey"});
 		ball.appendTo(".field");
 	};
 
 	Game.prototype.createPaddles = function (){
+		// Keep track of this
+		var self = this;
+		// Create paddles and set, size, position and color. Append to field div
+		var paddle1 = $("<div class='paddle1'>");
+		var paddle2 = $("<div class='paddle2'>");
+		paddle1.css({width:self.paddleW, height:self.paddleH, left:self.paddle1X, top:self.paddleY, position:"absolute", "background-color":"grey"});
+		paddle1.appendTo(".field");
+		paddle2.css({width:self.paddleW, height:self.paddleH, left:self.paddle2X, top:self.paddleY, position:"absolute", "background-color":"grey"});
+		paddle2.appendTo(".field");
+	};
+
+	Game.prototype.paddleMoveMent = function (){
+		// Keep track of this
+		var self = this;
+
+		// Object for storing mouse position
+		var divPos = {};
+		$(".field").on("mousemove", function(e){
+			var $div = $(".field");
+			divPos = {
+				left: e.pageX - $div.offset().left,
+				top: e.pageY - $div.offset().top - 40
+			};
+
+			// Whem mouse is moving inside field div, change Y-position of paddle1
+			$(".paddle1").css("top", divPos.top);
+
+			// Check if moving out of field, if so then hold movement
+			if (parseInt($(".paddle1").css("top"),10) >= parseInt(self.fieldH,10)-100){
+				var temp = parseInt(self.fieldH,10)-100;
+				$(".paddle1").css("top", temp);
+			}else if (parseInt($(".paddle1").css("top"),10) <= 0){
+				$(".paddle1").css("top", 0);
+			}
+		});
 
 	};
 
@@ -96,12 +141,17 @@ $(function(){
 		// Keep track of this
 		var self = this;
 
-		// Get ball Y position
+		// Get ball Y and Xposition
 		var tempBallYPos = parseInt($(".ball").css("top"),10);
-		// Get ball X position
 		var tempBallXPos = parseInt($(".ball").css("left"),10);
 
-		//console.log(tempBallYPos + " " + tempBallXPos);
+		// Get paddle1 Y and X position
+		var tempPaddle1YPos = parseInt($(".paddle1").css("top"),10);
+		var tempPaddle1XPos = parseInt($(".paddle1").css("left"),10);
+
+		// Get paddle2 Y and X position
+		var tempPaddle2YPos = parseInt($(".paddle2").css("top"),10);
+		var tempPaddle2XPos = parseInt($(".paddle2").css("left"),10);
 
 		//Check for collision against upper wall
 		if(tempBallYPos <= 0){
@@ -127,9 +177,26 @@ $(function(){
 			console.log("COLLIDED RIGHT WALL");
 			// Set ballMovingRight to "false"
 			self.ballMovingRight = 0;
+
+			// Scoring and restart placed here later, also check for finishing score (5 points?)
 		}
 
-		// Scoring and restart placed here later, also check for finishing score (5 points?)
+		// Get position from ball and paddles and check for collision. If collision occurs then change direction
+		var ball = {x: tempBallXPos, y: tempBallYPos, width: parseInt(self.ballW,10), height: parseInt(self.ballH,10)};
+		var paddle1 = {x: tempPaddle1XPos, y: tempPaddle1YPos, width: parseInt(self.paddleW,10), height: parseInt(self.paddleH,10)};
+		var paddle2 = {x: tempPaddle2XPos, y: tempPaddle2YPos, width: parseInt(self.paddleW,10), height: parseInt(self.paddleH,10)};
+
+		if (ball.x < paddle1.x + paddle1.width &&	ball.x + ball.width > paddle1.x && ball.y < paddle1.y + paddle1.height &&	ball.height + ball.y > paddle1.y){
+			// When colliding with left paddle, change direction
+			self.ballMovingRight = 1;
+			console.log ("collision detected left paddle");
+		}
+
+		if (ball.x < paddle2.x + paddle2.width &&	ball.x + ball.width > paddle2.x && ball.y < paddle2.y + paddle2.height &&	ball.height + ball.y > paddle2.y){
+			// When colliding with left paddle, change direction
+			self.ballMovingRight = 0;
+			console.log ("collision detected right paddle");
+		}
 	};
 
 	Game.prototype.countScores = function (){
