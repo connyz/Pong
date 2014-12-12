@@ -20,10 +20,14 @@ $(function(){
 		this.paddle2X = parseInt(this.fieldW, 10) - 35;
 
 		// Ball speed and movement variables
-		this.ballXVelocity = 3;
-		this.ballYVelocity = 2;
+		this.ballXVelocity = 4;
+		this.ballYVelocity = 1;
 		this.ballMovingRight = Math.round(Math.random());
 		this.ballMovingUp = Math.round(Math.random());
+
+		// Player and ai scores
+		this.playerScore = 0;
+		this.aiScore = 0;
 
 		// Spawn the ball
 		this.spawnBall();
@@ -41,6 +45,10 @@ $(function(){
 	Game.prototype.Start = function (){
 		// Keep track of this
 		var self = this;
+
+		// Start ai
+		self.ai();
+
 		// Main interval
 		setInterval(function(){
 			// Start moving ball at random direction
@@ -48,11 +56,12 @@ $(function(){
 
 			// Check for collision with walls
 			self.collisionDetection();
+
 		},15);
 	};
 
 	Game.prototype.spawnBall = function (){
-		// Create balldiv and set, size, position and color. Append to field div
+		// Create balldiv and set size, position and color. Append to field div
 		var ball = $("<div class='ball'>");
 		ball.css({width:this.ballW, height:this.ballH, left:this.ballX, top:this.ballY, position:"relative", "background-color":"grey"});
 		ball.appendTo(".field");
@@ -61,6 +70,7 @@ $(function(){
 	Game.prototype.createPaddles = function (){
 		// Keep track of this
 		var self = this;
+
 		// Create paddles and set, size, position and color. Append to field div
 		var paddle1 = $("<div class='paddle1'>");
 		var paddle2 = $("<div class='paddle2'>");
@@ -83,7 +93,7 @@ $(function(){
 				top: e.pageY - $div.offset().top - 40
 			};
 
-			// Whem mouse is moving inside field div, change Y-position of paddle1
+			// When mouse is moving inside field div, change Y-position of paddle1
 			$(".paddle1").css("top", divPos.top);
 
 			// Check if moving out of field, if so then hold movement
@@ -95,6 +105,47 @@ $(function(){
 			}
 		});
 
+	};
+
+	Game.prototype.ai = function (){
+		// Keep track of this
+		var self = this;
+
+		// Set ai paddle velocity, a temp var and initial aiPaddleYPos
+		var aiVel = 1;
+		var tempYPos;
+		var paddle2YPos = this.paddleY;
+
+		setInterval(function(){
+			// Get ball Y position
+			var tempBallYPos = parseInt($(".ball").css("top"),10);
+
+			// Get paddle2 Y position
+			var tempPaddle2YPos = parseInt($(".paddle2").css("top"),10);
+
+			//console.log("Ball: " + tempBallYPos + " Paddlepos: " + (tempPaddle2YPos + 50));
+			//$(".paddle2").css("top", tempBallYPos-40);
+
+			// Check where balls y pos is, if isn't equal to paddle2 pos, then move 1px towards it
+			if(tempBallYPos < paddle2YPos+40){
+				paddle2YPos -= 1;
+				$(".paddle2").css("top", paddle2YPos);
+				console.log("moving up?");
+			}else if(tempBallYPos > paddle2YPos+40){
+				paddle2YPos += 1;
+				$(".paddle2").css("top", paddle2YPos);
+				console.log("moving DOWN?");
+			}
+
+			// Check if moving out of field, if so then hold movement
+			if (parseInt($(".paddle2").css("top"),10) >= parseInt(self.fieldH,10)-100){
+				var temp = parseInt(self.fieldH,10)-100;
+				$(".paddle2").css("top", temp);
+			}else if (parseInt($(".paddle2").css("top"),10) <= 0){
+				$(".paddle2").css("top", 0);
+			}
+
+		},15);
 	};
 
 	Game.prototype.moveBall = function (){
@@ -206,9 +257,9 @@ $(function(){
 
 
 	// Start the game
-	var test = new Game();
+	var play = new Game();
 
-	//console.log(test.ballY);
-	//console.log(test.ballX);
+	//console.log(play.ballY);
+	//console.log(play.ballX);
 
 });
