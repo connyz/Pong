@@ -21,7 +21,7 @@ $(function(){
 
 		// Ball speed and movement variables
 		this.ballXVelocity = 4;
-		this.ballYVelocity = 1;
+		this.ballYVelocity = 2.5;
 		this.ballMovingRight = Math.round(Math.random());
 		this.ballMovingUp = Math.round(Math.random());
 
@@ -46,8 +46,11 @@ $(function(){
 		// Keep track of this
 		var self = this;
 
+		// Start interval for increasing difficulty
+		this.increaseDifficulty();
+
 		// Start ai
-		self.ai();
+		this.ai();
 
 		// Main interval
 		setInterval(function(){
@@ -58,6 +61,21 @@ $(function(){
 			self.collisionDetection();
 
 		},15);
+	};
+
+	Game.prototype.increaseDifficulty = function (){
+		// Keep track of this
+		var self = this;
+
+		// Increase x velocity at set interval
+		setInterval(function(){
+			self.ballXVelocity += 1;
+		},1000);
+
+		// Increase y velocity at set interval
+		setInterval(function(){
+			self.ballYVelocity += 0.5;
+		},2000);
 	};
 
 	Game.prototype.spawnBall = function (){
@@ -123,18 +141,15 @@ $(function(){
 			// Get paddle2 Y position
 			var tempPaddle2YPos = parseInt($(".paddle2").css("top"),10);
 
-			//console.log("Ball: " + tempBallYPos + " Paddlepos: " + (tempPaddle2YPos + 50));
-			//$(".paddle2").css("top", tempBallYPos-40);
-
-			// Check where balls y pos is, if isn't equal to paddle2 pos, then move 1px towards it
+			// Check where balls y pos is, if it isn't equal to paddle2 central pos, then move 1px towards it
 			if(tempBallYPos < paddle2YPos+40){
 				paddle2YPos -= 1;
 				$(".paddle2").css("top", paddle2YPos);
-				console.log("moving up?");
+				//console.log("moving up?");
 			}else if(tempBallYPos > paddle2YPos+40){
 				paddle2YPos += 1;
 				$(".paddle2").css("top", paddle2YPos);
-				console.log("moving DOWN?");
+				//console.log("moving DOWN?");
 			}
 
 			// Check if moving out of field, if so then hold movement
@@ -153,8 +168,6 @@ $(function(){
 		var self = this;
 
 		//Start moving depending och false or true directions
-		//console.log("setinterval firing");
-
 		// If bMU true then
 		if (self.ballMovingUp){
 			var ballYPos = $(".ball").css("top");
@@ -217,10 +230,21 @@ $(function(){
 		//Check for collision against right wall
 		if(tempBallXPos <= 0){
 			console.log("COLLIDED LEFT WALL");
+
 			// Set ballMovingRight to "true"
 			self.ballMovingRight = 1;
 
 			// Scoring and restart placed here later, also check for finishing score (5 points?)
+			this.aiScore += 1;
+			$(".aiScore").text("AI Score: " + this.aiScore);
+
+			// Reset difficulty and ball position, and stop interval, mousclick starts it
+
+
+			// Check for winning score (5 points)
+			if(this.aiScore == 5){
+				console.log("ai won");
+			}
 		}
 
 		//Check for collision against left wall
@@ -230,6 +254,16 @@ $(function(){
 			self.ballMovingRight = 0;
 
 			// Scoring and restart placed here later, also check for finishing score (5 points?)
+			this.playerScore += 1;
+			$(".pScore").text("Player Score: " + this.playerScore);
+
+			// Reset difficulty and ball position, and stop interval, mousclick starts it
+
+
+			// Check for winning score (5 points)
+			if(this.playerScore == 5){
+				console.log("player won");
+			}
 		}
 
 		// Get position from ball and paddles and check for collision. If collision occurs then change direction
@@ -237,12 +271,14 @@ $(function(){
 		var paddle1 = {x: tempPaddle1XPos, y: tempPaddle1YPos, width: parseInt(self.paddleW,10), height: parseInt(self.paddleH,10)};
 		var paddle2 = {x: tempPaddle2XPos, y: tempPaddle2YPos, width: parseInt(self.paddleW,10), height: parseInt(self.paddleH,10)};
 
+		// Collision detection for left paddle
 		if (ball.x < paddle1.x + paddle1.width &&	ball.x + ball.width > paddle1.x && ball.y < paddle1.y + paddle1.height &&	ball.height + ball.y > paddle1.y){
 			// When colliding with left paddle, change direction
 			self.ballMovingRight = 1;
 			console.log ("collision detected left paddle");
 		}
 
+		// Collision detection for right paddle
 		if (ball.x < paddle2.x + paddle2.width &&	ball.x + ball.width > paddle2.x && ball.y < paddle2.y + paddle2.height &&	ball.height + ball.y > paddle2.y){
 			// When colliding with left paddle, change direction
 			self.ballMovingRight = 0;
@@ -250,16 +286,7 @@ $(function(){
 		}
 	};
 
-	Game.prototype.countScores = function (){
-		// Keep track of this
-		var self = this;
-	};
-
-
 	// Start the game
 	var play = new Game();
-
-	//console.log(play.ballY);
-	//console.log(play.ballX);
 
 });
