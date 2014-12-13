@@ -55,6 +55,9 @@ $(function(){
 		// Start ai
 		this.ai();
 
+		// Start clickhandlers
+		this.clickHandlers();
+
 		// Main interval
 		this.interval = setInterval(function(){
 			// Start moving ball at random direction
@@ -64,6 +67,25 @@ $(function(){
 			self.collisionDetection();
 
 		},15);
+	};
+
+	Game.prototype.clickHandlers = function (){
+		// Keep track of this
+		var self = this;
+
+		// IF clause NEEDED HERE FOR CHECKING IF ALREADY RUNNING -------------------------<<<
+		$( ".field" ).on( "click", function() {
+			// Keep track of this
+			var self2 = self;
+
+			self.interval = setInterval(function(){
+				// Start moving ball at random direction
+				self2.moveBall();
+
+				// Check for collision with walls
+				self2.collisionDetection();
+			},15);
+		});
 	};
 
 	Game.prototype.increaseDifficulty = function (){
@@ -220,9 +242,6 @@ $(function(){
 		var tempPaddle2YPos = parseInt($(".paddle2").css("top"),10);
 		var tempPaddle2XPos = parseInt($(".paddle2").css("left"),10);
 
-		//console.log(this.ballY);
-		//console.log("Ball top: " + $(".ball").css("top") + " -- Ball left: " + $(".ball").css("left"));
-
 		//Check for collision against upper wall
 		if(tempBallYPos <= 0){
 			self.ballMovingUp = 0;
@@ -250,12 +269,11 @@ $(function(){
 			$(".ball").css("top", self.ballY);
 			$(".ball").css("left", self.ballX);
 			clearInterval(this.interval);
-			var playerScoreMes = $('<p class="message">Player scored! Click left mouse button to continue..</p>').fadeOut();
-			$(".ball").after(playerScoreMes);
-			$(".message").delay(1000).fadeOut(3000, function(){
+			var aiScoreMes = $('<p class="messageAi">AI scored! Click left mouse button to continue..</p>');
+			$(".ball").after(aiScoreMes);
+			$(".messageAi").delay(1000).fadeOut(3000, function(){
 				$(this).remove();
 			});
-			//$().text().fadeIn().delay(3000).fadeOut();
 
 			// Check for winning score (5 points)
 			if(this.aiScore == 5){
@@ -273,14 +291,14 @@ $(function(){
 			this.playerScore += 1;
 			$(".pScore").text("Player Score: " + this.playerScore);
 
-			// Reset difficulty, ball position, stop interval and mousclick starts it
+			// Reset difficulty, ball position, stop interval and mouseclick starts it with earlier method
 			this.ballXVelocity = 3;
 			this.ballYVelocity = 2.5;
 			$(".ball").css("top", this.ballY);
 			$(".ball").css("left", this.ballX);
 			clearInterval(this.interval);
-			var aiScoreMes = $('p class="message">Player scored! Click left mouse button to continue..</p').fadeOut();
-			$(".ball").after(aiScoreMes);
+			var playerScoreMes = $('<p class="message">Player scored! Click left mouse button to continue..</p>');
+			$(".ball").after(playerScoreMes);
 			$(".message").delay(1000).fadeOut(3000, function(){
 				$(this).remove();
 			});
