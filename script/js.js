@@ -38,6 +38,9 @@ $(function(){
 		// Setup movement for left paddle
 		this.paddleMoveMent();
 
+		// Main interval stored in var
+		this.interval = null;
+
 		// Start the game
 		this.Start();
 	};
@@ -53,7 +56,7 @@ $(function(){
 		this.ai();
 
 		// Main interval
-		setInterval(function(){
+		this.interval = setInterval(function(){
 			// Start moving ball at random direction
 			self.moveBall();
 
@@ -130,7 +133,7 @@ $(function(){
 		var self = this;
 
 		// Set ai paddle velocity, a temp var and initial aiPaddleYPos
-		var aiVel = 1;
+		var aiVel = 3;
 		var tempYPos;
 		var paddle2YPos = this.paddleY;
 
@@ -143,11 +146,11 @@ $(function(){
 
 			// Check where balls y pos is, if it isn't equal to paddle2 central pos, then move 1px towards it
 			if(tempBallYPos < paddle2YPos+40){
-				paddle2YPos -= 1;
+				paddle2YPos -= aiVel;
 				$(".paddle2").css("top", paddle2YPos);
 				//console.log("moving up?");
 			}else if(tempBallYPos > paddle2YPos+40){
-				paddle2YPos += 1;
+				paddle2YPos += aiVel;
 				$(".paddle2").css("top", paddle2YPos);
 				//console.log("moving DOWN?");
 			}
@@ -217,6 +220,9 @@ $(function(){
 		var tempPaddle2YPos = parseInt($(".paddle2").css("top"),10);
 		var tempPaddle2XPos = parseInt($(".paddle2").css("left"),10);
 
+		//console.log(this.ballY);
+		//console.log("Ball top: " + $(".ball").css("top") + " -- Ball left: " + $(".ball").css("left"));
+
 		//Check for collision against upper wall
 		if(tempBallYPos <= 0){
 			self.ballMovingUp = 0;
@@ -238,8 +244,18 @@ $(function(){
 			this.aiScore += 1;
 			$(".aiScore").text("AI Score: " + this.aiScore);
 
-			// Reset difficulty and ball position, and stop interval, mousclick starts it
-
+			// Reset difficulty, ball position, stop interval and mousclick starts it
+			this.ballXVelocity = 3;
+			this.ballYVelocity = 2.5;
+			$(".ball").css("top", self.ballY);
+			$(".ball").css("left", self.ballX);
+			clearInterval(this.interval);
+			var playerScoreMes = $('<p class="message">Player scored! Click left mouse button to continue..</p>').fadeOut();
+			$(".ball").after(playerScoreMes);
+			$(".message").delay(1000).fadeOut(3000, function(){
+				$(this).remove();
+			});
+			//$().text().fadeIn().delay(3000).fadeOut();
 
 			// Check for winning score (5 points)
 			if(this.aiScore == 5){
@@ -257,8 +273,17 @@ $(function(){
 			this.playerScore += 1;
 			$(".pScore").text("Player Score: " + this.playerScore);
 
-			// Reset difficulty and ball position, and stop interval, mousclick starts it
-
+			// Reset difficulty, ball position, stop interval and mousclick starts it
+			this.ballXVelocity = 3;
+			this.ballYVelocity = 2.5;
+			$(".ball").css("top", this.ballY);
+			$(".ball").css("left", this.ballX);
+			clearInterval(this.interval);
+			var aiScoreMes = $('p class="message">Player scored! Click left mouse button to continue..</p').fadeOut();
+			$(".ball").after(aiScoreMes);
+			$(".message").delay(1000).fadeOut(3000, function(){
+				$(this).remove();
+			});
 
 			// Check for winning score (5 points)
 			if(this.playerScore == 5){
@@ -275,14 +300,12 @@ $(function(){
 		if (ball.x < paddle1.x + paddle1.width &&	ball.x + ball.width > paddle1.x && ball.y < paddle1.y + paddle1.height &&	ball.height + ball.y > paddle1.y){
 			// When colliding with left paddle, change direction
 			self.ballMovingRight = 1;
-			console.log ("collision detected left paddle");
 		}
 
 		// Collision detection for right paddle
 		if (ball.x < paddle2.x + paddle2.width &&	ball.x + ball.width > paddle2.x && ball.y < paddle2.y + paddle2.height &&	ball.height + ball.y > paddle2.y){
 			// When colliding with left paddle, change direction
 			self.ballMovingRight = 0;
-			console.log ("collision detected right paddle");
 		}
 	};
 
