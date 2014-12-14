@@ -29,6 +29,13 @@ $(function(){
 		this.playerScore = 0;
 		this.aiScore = 0;
 
+		// Main interval stored in var
+		this.interval = 0;
+
+		// ball x and y velocity increase interval vars
+		this.ballXInterval = 0;
+		this.ballYInterval = 0;
+
 		// Spawn the ball
 		this.spawnBall();
 
@@ -38,19 +45,11 @@ $(function(){
 		// Setup movement for left paddle
 		this.paddleMoveMent();
 
-		// Main interval stored in var
-		this.interval = null;
-
 		// Start the game
 		this.Start();
 	};
 
 	Game.prototype.Start = function (){
-		// Keep track of this
-		var self = this;
-
-		// Start interval for increasing difficulty
-		this.increaseDifficulty();
 
 		// Start ai
 		this.ai();
@@ -58,47 +57,45 @@ $(function(){
 		// Start clickhandlers
 		this.clickHandlers();
 
-		// Main interval
-		this.interval = setInterval(function(){
-			// Start moving ball at random direction
-			self.moveBall();
-
-			// Check for collision with walls
-			self.collisionDetection();
-
-		},15);
 	};
 
 	Game.prototype.clickHandlers = function (){
 		// Keep track of this
 		var self = this;
 
-		// IF clause NEEDED HERE FOR CHECKING IF ALREADY RUNNING -------------------------<<<
+		// Set clickhandler to react when clicking the fielddiv, if interval is zero then start interval again
 		$( ".field" ).on( "click", function() {
-			// Keep track of this
-			var self2 = self;
+			if(self.playerScore === 5 || self.aiScore === 5){
+				location.reload();
+			}
 
-			self.interval = setInterval(function(){
-				// Start moving ball at random direction
-				self2.moveBall();
+			// If interval is reset, start again
+			if(self.interval === 0){
+				// Start increasing difficulty again
+				self.increaseDifficulty();
 
-				// Check for collision with walls
-				self2.collisionDetection();
-			},15);
+				self.interval = setInterval(function(){
+					// Start moving ball at random direction
+					self.moveBall();
+
+					// Check for collision with walls
+					self.collisionDetection();
+
+				},15);
+			}
 		});
 	};
 
 	Game.prototype.increaseDifficulty = function (){
 		// Keep track of this
 		var self = this;
-
 		// Increase x velocity at set interval
-		setInterval(function(){
+		this.ballXInterval = setInterval(function(){
 			self.ballXVelocity += 1;
 		},1000);
 
 		// Increase y velocity at set interval
-		setInterval(function(){
+		this.ballYInterval = setInterval(function(){
 			self.ballYVelocity += 0.5;
 		},2000);
 	};
@@ -155,7 +152,7 @@ $(function(){
 		var self = this;
 
 		// Set ai paddle velocity, a temp var and initial aiPaddleYPos
-		var aiVel = 3;
+		var aiVel = 4;
 		var tempYPos;
 		var paddle2YPos = this.paddleY;
 
@@ -170,11 +167,9 @@ $(function(){
 			if(tempBallYPos < paddle2YPos+40){
 				paddle2YPos -= aiVel;
 				$(".paddle2").css("top", paddle2YPos);
-				//console.log("moving up?");
 			}else if(tempBallYPos > paddle2YPos+40){
 				paddle2YPos += aiVel;
 				$(".paddle2").css("top", paddle2YPos);
-				//console.log("moving DOWN?");
 			}
 
 			// Check if moving out of field, if so then hold movement
@@ -254,40 +249,45 @@ $(function(){
 
 		//Check for collision against right wall
 		if(tempBallXPos <= 0){
-			console.log("COLLIDED LEFT WALL");
 
 			// Set ballMovingRight to "true"
 			self.ballMovingRight = 1;
 
-			// Scoring and restart placed here later, also check for finishing score (5 points?)
+			// Increase aiscore
 			this.aiScore += 1;
 			$(".aiScore").text("AI Score: " + this.aiScore);
 
-			// Reset difficulty, ball position, stop interval and mousclick starts it
+			// Reset ball position, difficulty, stop intervals and display message
 			this.ballXVelocity = 3;
 			this.ballYVelocity = 2.5;
 			$(".ball").css("top", self.ballY);
 			$(".ball").css("left", self.ballX);
 			clearInterval(this.interval);
-			var aiScoreMes = $('<p class="messageAi">AI scored! Click left mouse button to continue..</p>');
-			$(".ball").after(aiScoreMes);
-			$(".messageAi").delay(1000).fadeOut(3000, function(){
-				$(this).remove();
-			});
+			clearInterval(this.ballXInterval);
+			clearInterval(this.ballYInterval);
+			this.interval = 0; // Setting it to zero for later check in clickhandler
 
+			// Check if score is less than 5, show scored message
+			if (this.aiScore < 5){
+				var aiScoreMes = $('<p class="messageAi">AI scored! Click left mouse button to continue..</p>');
+				$(".ball").after(aiScoreMes);
+				$(".messageAi").delay(1000).fadeOut(3000, function(){
+					$(this).remove();
+				});
+			}
 			// Check for winning score (5 points)
 			if(this.aiScore == 5){
-				console.log("ai won");
+				var aiWinMes = $('<p class="messageAi">You lost! :( Click left mouse button to restart..</p>');
+				$(".ball").after(aiWinMes);
 			}
 		}
 
 		//Check for collision against left wall
 		if(tempBallXPos >= parseInt(self.fieldW,10)-parseInt(self.ballW,10)){
-			console.log("COLLIDED RIGHT WALL");
 			// Set ballMovingRight to "false"
 			self.ballMovingRight = 0;
 
-			// Scoring and restart placed here later, also check for finishing score (5 points?)
+			// Increase playerscore
 			this.playerScore += 1;
 			$(".pScore").text("Player Score: " + this.playerScore);
 
@@ -297,15 +297,23 @@ $(function(){
 			$(".ball").css("top", this.ballY);
 			$(".ball").css("left", this.ballX);
 			clearInterval(this.interval);
-			var playerScoreMes = $('<p class="message">Player scored! Click left mouse button to continue..</p>');
-			$(".ball").after(playerScoreMes);
-			$(".message").delay(1000).fadeOut(3000, function(){
-				$(this).remove();
-			});
+			clearInterval(this.ballXInterval);
+			clearInterval(this.ballYInterval);
+			this.interval = 0; // Setting it to zero for later check in clickhandler
+
+			// Check if score is less than 5, show scored message
+			if (this.playerScore < 5){
+				var playerScoreMes = $('<p class="message">You scored! :) Click left mouse button to continue..</p>');
+				$(".ball").after(playerScoreMes);
+				$(".message").delay(1000).fadeOut(3000, function(){
+					$(this).remove();
+				});
+			}
 
 			// Check for winning score (5 points)
 			if(this.playerScore == 5){
-				console.log("player won");
+				var playerWinMes = $('<p class="message">Nice work you won! Click left mouse button to restart..</p>');
+				$(".ball").after(playerWinMes);
 			}
 		}
 

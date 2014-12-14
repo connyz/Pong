@@ -1,3 +1,8 @@
+body {
+	font-family: "Open Sans";
+	font-size: 15px;
+}
+
 .gui {
 	width: 700px;
 	margin: 30px auto 0;
@@ -13,12 +18,16 @@
 
 .title {
 	width: 100%;
-	margin: 25px auto 0;
+	margin: 25px auto 10px;
 	text-align: center;
 }
 
 h2 {
 	font-size: 30px;
+}
+
+h3 {
+	font-size: 20px;
 }
 
 .pScore {
@@ -32,13 +41,23 @@ h2 {
 .message {
 	color: green;
 	text-align: center;
-	font-weight: bolder;
-	font-size: 25px;
+	font-weight: bold !important;
+	font-size: 15px;
 }
 
 .messageAi {
 	color: red;
 	text-align: center;
-	font-weight: bolder;
-	font-size: 25px;
+	font-weight: bold !important;
+	font-size: 15px;
+}
+
+.instructions {
+	margin: 20px 0 0 0;
+	text-align: center;
+}
+
+.instructions p {
+	margin: 10px 0 0 0;
+	font-size: 14px;
 }
