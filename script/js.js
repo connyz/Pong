@@ -247,7 +247,7 @@ $(function(){
 			self.ballMovingUp = 1;
 		}
 
-		//Check for collision against right wall
+		//Check for collision against left wall
 		if(tempBallXPos <= 0){
 
 			// Set ballMovingRight to "true"
@@ -282,7 +282,7 @@ $(function(){
 			}
 		}
 
-		//Check for collision against left wall
+		//Check for collision against right wall
 		if(tempBallXPos >= parseInt(self.fieldW,10)-parseInt(self.ballW,10)){
 			// Set ballMovingRight to "false"
 			self.ballMovingRight = 0;
